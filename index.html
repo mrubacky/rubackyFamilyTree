@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubacky/McLean Family Tree</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Rubacky/McLean Family Tree</h1>
+    </header>
+
+    <div class="main-container">
+        <div class="tree-visualization-container">
+            <svg id="familyTreeSvg"></svg>
+        </div>
+        <aside class="details-panel">
+            <h2>Details</h2>
+            <div id="ancestorDetails">
+                <p>Click on a node in the tree to see details here.</p>
+                <hr>
+                <p><strong>Name:</strong> <span id="detailName">-</span></p>
+                <p><strong>Origin:</strong> <span id="detailOrigin">-</span></p>
+                <p><strong>Date/Year Info:</strong> <span id="detailYearInfo">-</span></p>
+                <p><strong>Raw Data:</strong> <span id="detailRawText">-</span></p>
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        <p>Family Tree Visualization</p>
+    </footer>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="tree_logic.js"></script>
+</body>
+</html>
