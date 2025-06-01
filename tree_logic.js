@@ -127,8 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const node = g.selectAll('g.node') // Select all nodes within the main <g>
             .data(nodes, d => d.id || (d.id = d.data.id || `node-${++nodeIndex}`));
 
-        const nodeEnter = node.enter().append('g')
-            .attr('class', d => `node country-${sanitizeForCss(d.data.countryOfOrigin || 'unknown')}`)
+            const nodeEnter = node.enter().append('g')
+            .attr('class', d => {
+                const dominant = getDominantOrigin(d.data.origin_mix, d.data.countryOfOrigin);
+                return `node country-${sanitizeForCss(dominant)}`;
+            })
             // New nodes start at source's *previous* position (relative to <g>)
             .attr('transform', `translate(${source.y0},${source.x0})`)
             .on('click', (event, d) => {
@@ -227,20 +230,71 @@ document.addEventListener('DOMContentLoaded', () => {
                   ${ty} ${tx}`;
     }
 
-    function displayDetails(data) {
+    function getDominantOrigin(originMix, fallbackCountry) {
+        if (originMix && typeof originMix === 'object' && Object.keys(originMix).length > 0) {
+            let dominantCountry = 'unknown'; // Default if only "Unknown" or complex tie
+            let maxPercentage = 0;
+            let hasKnownOrigin = false;
+    
+            for (const country in originMix) {
+                const percentage = originMix[country];
+                const countryLower = country.toLowerCase();
+                if (countryLower !== 'unknown' && percentage > maxPercentage) {
+                    maxPercentage = percentage;
+                    dominantCountry = country;
+                    hasKnownOrigin = true;
+                } else if (countryLower !== 'unknown' && percentage === maxPercentage) {
+                    // Handle ties, e.g. by taking the first one alphabetically or keeping current
+                    if (country.localeCompare(dominantCountry) < 0) {
+                         dominantCountry = country; // Or just keep the first one encountered
+                    }
+                     hasKnownOrigin = true;
+                }
+            }
+            // If maxPercentage is still 0 (e.g. all origins were "Unknown" or very small),
+            // or if the only significant one is "Unknown"
+            if (!hasKnownOrigin && originMix["Unknown"] > 0.5) { // If "Unknown" is dominant
+                 return 'unknown';
+            }
+            if (dominantCountry === 'unknown' && fallbackCountry) { // If no clear dominant, use fallback
+                return fallbackCountry;
+            }
+            return dominantCountry; // This could still be 'unknown' if that's all that's left
+        }
+        return fallbackCountry || 'unknown'; // Fallback if mix is missing
+    }
+
+    function displayDetails(data) { // data is d.data from the D3 node
         detailNameEl.textContent = data.name || 'N/A';
-        const originText = data.details?.origin || 'N/A';
+        
+        // Display origin breakdown
+        const breakdown = data.details?.origin_breakdown; // Accessing from new structure
+        let breakdownHtml = "N/A";
+        if (breakdown && typeof breakdown === 'object' && Object.keys(breakdown).length > 0) {
+            breakdownHtml = "<ul>";
+            // Sort by percentage descending for better readability
+            const sortedBreakdown = Object.entries(breakdown)
+                                    .sort(([,a],[,b]) => b-a);
+            for (const [country, percentage] of sortedBreakdown) {
+                if (percentage > 0.001) { // Only show if more than 0.1%
+                    breakdownHtml += `<li>${country}: ${(percentage * 100).toFixed(1)}%</li>`;
+                }
+            }
+            breakdownHtml += "</ul>";
+        }
+        detailOriginEl.innerHTML = breakdownHtml; // Assuming detailOriginEl is for the breakdown
+
+        // Other details
         const yearInfoText = data.details?.year_info || 'N/A';
         const rawText = data.details?.raw || data.name;
-
-        detailOriginEl.textContent = originText;
         detailYearInfoEl.textContent = yearInfoText;
         detailRawTextEl.textContent = rawText;
         
-        detailOriginEl.className = '';
-        if (data.countryOfOrigin) {
-            detailOriginEl.classList.add(`country-text-${sanitizeForCss(data.countryOfOrigin)}`);
-        }
+        // Remove class styling from text as node color handles it
+        // detailOriginEl.className = ''; 
+        // if (data.countryOfOrigin) { // Not needed if breakdown shown
+        //     detailOriginEl.classList.add(`country-text-${sanitizeForCss(data.countryOfOrigin)}`);
+        // }
     }
 
     function sanitizeForCss(className) {
