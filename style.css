@@ -146,3 +146,82 @@ footer {
 
 /* Styling for origin text in details panel if needed */
 /* .country-text-ireland { color: #27ae60; font-weight: bold; } */
+
+/* === Add these at the end of your style.css === */
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    body {
+        font-size: 13px; /* Slightly smaller base font */
+    }
+
+    header h1 {
+        font-size: 1.5em;
+    }
+
+    .main-container {
+        flex-direction: column; /* Stack tree and details panel vertically */
+        overflow-y: auto; /* Allow body to scroll if content exceeds screen height */
+        overflow-x: hidden;
+    }
+
+    .tree-visualization-container {
+        width: 100%;
+        /* min-height: 50vh; */ /* Ensure it has some decent height */
+        /* overflow-x: auto; /* Allow horizontal scroll for tree itself */
+        /* The SVG itself will be scrollable due to zoom/pan */
+        margin-right: 0;
+        margin-bottom: 10px; /* Space before details panel */
+        border-radius: 8px; /* Full radius */
+        border-right: none;
+        padding: 10px; /* Slightly reduced padding */
+    }
+
+    /* SVG will be made pannable/zoomable, so its container can manage overflow */
+    #familyTreeSvg {
+        min-width: 100%; /* Ensure it tries to fit initially, zoom will handle largeness */
+    }
+
+
+    .details-panel {
+        width: auto; /* Take full available width */
+        max-width: 100%;
+        height: auto; /* Adjust height automatically */
+        border-left: none;
+        border-top: 1px solid #dde2e7; /* Separator from tree view */
+        border-radius: 8px; /* Full radius */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Adjust shadow if needed */
+        margin-bottom: 10px;
+    }
+
+    .details-panel h2 {
+        font-size: 1.3em;
+    }
+
+    /* D3 Node Text on Mobile - can be slightly smaller if needed */
+    .node text {
+        font-size: 10px;
+        stroke-width: 2.5px; /* Adjust if text becomes too bold */
+    }
+
+    /* Reduce node circle size slightly if desired, though zoom helps more */
+    /* .node circle {
+        r: 6px;
+    }
+    .node circle:hover {
+        r: 8px;
+    } */
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.3em;
+    }
+    .details-panel p {
+        margin: 0.6em 0;
+        line-height: 1.5;
+    }
+    .node text {
+        font-size: 9px; /* Even smaller for very small screens */
+    }
+}
